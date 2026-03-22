@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+pydantic
+groq
+pdfplumber
+python-docx
+reportlab
+python-multipart
+python-dotenv
+sentence-transformers

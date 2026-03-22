@@ -1,0 +1,67 @@
+{
+    "applications": [],
+    "global_stats": {},
+    "candidate_profile": {
+        "skills": [
+            "Python",
+            "Machine Learning",
+            "SQL",
+            "Java"
+        ],
+        "tools": [
+            "TensorFlow",
+            "Scikit-learn",
+            "Git",
+            "Docker",
+            "AWS"
+        ],
+        "projects": [
+            "Real-time Analytics Dashboard",
+            "AI Resume Parser Integration"
+        ],
+        "experience_level": "3+ years",
+        "domains": [
+            "Web Development",
+            "AI Engineering"
+        ],
+        "education": "B.Tech Computer Science",
+        "skill_metrics": [
+            {
+                "category": "Programming",
+                "score": 85
+            },
+            {
+                "category": "Machine Learning",
+                "score": 90
+            },
+            {
+                "category": "Data Analysis",
+                "score": 75
+            },
+            {
+                "category": "Cloud",
+                "score": 60
+            },
+            {
+                "category": "DevOps",
+                "score": 55
+            }
+        ],
+        "extracted_text": "Manpreet Singh\n\ud83d\udcde +91-8839462076 | \ud83d\udce7 im.manpreetsinghk@gmail.com\nObjective\nMotivated and results-driven Computer Science student with strong foundations in AI, Machine Learning, and Cloud Technologies. Seeking to leverage technical and analytical skills to contribute to impactful projects and solve real-world problems.\nEducation\nB.Tech in Computer Science & Engineering (CSE), ITM University, Gwalior | Jul 2021 \u2013 Jun 2025\nCertifications\nMicrosoft Azure AI Fundamentals\nMicrosoft Azure Developer Associate\nAWS Academy Cloud Architecting\nTechnical Skills\nLanguages: Python, Java\nWeb: Spring Boot, REST APIs\nDatabases: MySQL\nCloud: AWS, Microsoft Azure\nAI/ML: Scikit-learn, TensorFlow, Keras, OpenCV\nData Science: GenAI, NLP, Data Analysis, Visualization\nTools: Docker, Git, Jupyter, VS Code, Eclipse, Streamlit\nProject Experience\nAgentic AI \u2013 Finance & Web Assistant (2025)\nDeveloped an Agentic AI system using LLaMA-3.3-70B (Groq) for financial and web-based queries.\nCreated two intelligent agents for real-time stock data (YFinance) and web search (DuckDuckGo).\nTech Used: Python, Phi Framework, Groq LLM, YFinance, DuckDuckGo, Streamlit\nNutriSense-AI\nBuilt an AI-powered nutrition assistant with BMI calculator, diet planner, and AI recipe generator.\nIntegrated image recognition for food classification and nutrient analysis.\nTech Used: Python, Streamlit, Google Gemini API, OpenCV\nApplicant Tracking System\nDesigned a smart ATS tool to evaluate resumes against job descriptions using AI.\nUsed G..."
+    },
+    "current_profile_state": "analyzed",
+    "current_application": {
+        "company": "Target Company",
+        "role": "Software Engineer",
+        "jd_text": "Looking for Data Science / AI\u2013ML professionals to join exciting, high\u2011impact projects. Immediate opportunities for skilled candidates who can attend an in\u2011person interview in Pune this Saturday.\n\n\ud83d\udd39 Interview Mode: Face\u2011to\u2011Face\n\n\ud83d\udd39 Interview Day: Saturday, 14-Feb-2026\n\n\ud83d\udd39 Location: Pune, Maharashtra\n\n\n\nPositions:\n\n\u2705 Data Scientist\n\n\u2705 AI / Machine Learning Engineer\n\n\n\nKey Skills (Any of the below):\n\nMachine Learning, Deep Learning, NLP\nGenerative AI, LLMs, Prompt Engineering, RAG\nPython, SQL, PySpar",
+        "required_skills": [
+            "Data Science",
+            "Deep Learning",
+            "Machine Learning",
+            "NLP",
+            "Python",
+            "SQL"
+        ],
+        "match_score": 58
+    }
+}

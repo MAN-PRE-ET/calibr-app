@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+*.pyc
+
+# Node
+node_modules/
+careercopilot-web/dist/
+careercopilot-web/.vercel/
+*.lock
+.env.local
+.env.production.local
+.env.development.local
+
+# Vercel
+.vercel/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.suo
+*.user
+
+# Data files with personal info (keep schema, not data)
+# calibr_data.json  <-- actually keep this for demo
