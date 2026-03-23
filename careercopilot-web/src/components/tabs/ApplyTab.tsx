@@ -144,12 +144,12 @@ export function ApplyTab() {
 
   const radarData = result
     ? [
-        { category: "Technical", you: result.strong_match.length ? 85 : 40, required: 90 },
-        { category: "Domain",    you: result.moderate_match.length ? 70 : 35, required: 75 },
-        { category: "Tools",     you: result.missing_skills.length <= 1 ? 80 : 50, required: 80 },
-        { category: "Soft",      you: 75, required: 70 },
-        { category: "Experience", you: 65, required: 80 },
-      ]
+      { category: "Technical", you: result.strong_match.length ? 85 : 40, required: 90 },
+      { category: "Domain", you: result.moderate_match.length ? 70 : 35, required: 75 },
+      { category: "Tools", you: result.missing_skills.length <= 1 ? 80 : 50, required: 80 },
+      { category: "Soft", you: 75, required: 70 },
+      { category: "Experience", you: 65, required: 80 },
+    ]
     : []
 
   return (
@@ -190,15 +190,15 @@ export function ApplyTab() {
               >
                 {uploading ? (
                   <><Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--accent-mint)' }} />
-                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Extracting profile via CALIBR…</p></>
+                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Extracting profile via CALIBR…</p></>
                 ) : uploadedProfile ? (
                   <><CheckCircle2 className="w-8 h-8" style={{ color: 'var(--accent-mint)' }} />
-                  <p className="text-sm font-semibold" style={{ color: 'var(--accent-mint)' }}>Profile uploaded — {uploadedProfile.name || "Resume"}</p>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{uploadedProfile.skills?.length || 0} skills detected · click to replace</p></>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--accent-mint)' }}>Profile uploaded — {uploadedProfile.name || "Resume"}</p>
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{uploadedProfile.skills?.length || 0} skills detected · click to replace</p></>
                 ) : (
                   <><UploadCloud className="w-8 h-8" style={{ color: 'var(--text-muted)' }} />
-                  <p className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>Upload Resume / CV</p>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>PDF, DOCX, TXT</p></>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>Upload Resume / CV</p>
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>PDF, DOCX, TXT</p></>
                 )}
               </div>
 
