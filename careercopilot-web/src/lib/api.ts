@@ -3,7 +3,8 @@
  * Typed wrappers for all backend endpoints.
  */
 
-const BASE = (import.meta.env.VITE_API_BASE as string) || "http://localhost:8000"
+const BASE_URL = (import.meta.env.VITE_API_BASE as string) || "http://localhost:8000"
+export const API_BASE = BASE_URL
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -11,7 +12,7 @@ async function apiFetch<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
+  const res = await fetch(`${API_BASE}${path}`, {
     headers: { "Content-Type": "application/json", ...options.headers },
     ...options,
   })
@@ -168,7 +169,7 @@ export const calibrAPI = {
   uploadResume: (file: File): Promise<ProfileUploadResult> => {
     const form = new FormData()
     form.append("file", file)
-    return fetch(`${BASE}/api/profile/upload`, { method: "POST", body: form })
+    return fetch(`${API_BASE}/api/profile/upload`, { method: "POST", body: form })
       .then(async res => {
         if (!res.ok) {
           const err = await res.json().catch(() => ({}))
@@ -235,7 +236,7 @@ export const calibrAPI = {
     message: string,
     context: Record<string, unknown> = {}
   ): AsyncGenerator<string> {
-    const res = await fetch(`${BASE}/api/agent/chat`, {
+    const res = await fetch(`${API_BASE}/api/agent/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message, context }),

@@ -885,6 +885,22 @@ CANDIDATE CONTEXT:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# GET /api/resume/download/{filename}
+# ─────────────────────────────────────────────────────────────────────────────
+@app.get("/api/resume/download/{filename}")
+def download_resume_pdf(filename: str):
+    file_path = os.path.join("resumes", filename)
+    if not os.path.exists(file_path):
+        raise HTTPException(404, "Resume not found")
+    return FileResponse(
+        path=file_path,
+        filename=filename,
+        media_type='application/pdf',
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # POST /api/resume/generate
 # ─────────────────────────────────────────────────────────────────────────────
 @app.post("/api/resume/generate")
@@ -975,7 +991,7 @@ Return ONLY valid JSON. No markdown, no backticks, no explanation."""
 
     return {
         "status": "success",
-        "download_url": f"http://localhost:8000/resumes/{pdf_filename}",
+        "download_url": f"/api/resume/download/{pdf_filename}",
         "preview": {
             "summary": content.get("summary", ""),
             "highlighted_skills": content.get("skills_to_highlight", [])[:6],

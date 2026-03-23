@@ -7,7 +7,7 @@ import {
   UploadCloud, Loader2, ChevronDown, ChevronUp, Download, Sparkles,
   CheckCircle2, AlertCircle, RefreshCw, FileText
 } from "lucide-react"
-import { calibrAPI, type JobAnalysisResult } from "@/lib/api"
+import { calibrAPI, type JobAnalysisResult, API_BASE } from "@/lib/api"
 
 // ─── Circular progress ring ───────────────────────────────────────────────────
 function CircularProgress({ score, animated }: { score: number; animated: boolean }) {
@@ -130,8 +130,9 @@ export function ApplyTab() {
     setGenerateError(null)
     try {
       const res = await calibrAPI.generateResume(result.application_id)
-      setGenerateResult(res)
-      window.open(res.download_url, "_blank")
+      const downloadUrl = res.download_url.startsWith('http') ? res.download_url : `${API_BASE}${res.download_url}`
+      setGenerateResult({ ...res, download_url: downloadUrl })
+      window.open(downloadUrl, "_self")
     } catch (e: any) {
       setGenerateError(e.message || "Generation failed")
     } finally {
