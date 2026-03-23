@@ -1,0 +1,5 @@
+{
+  "buildCommand": "cd careercopilot-web && npm install && npm run build",
+  "outputDirectory": "careercopilot-web/dist",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
