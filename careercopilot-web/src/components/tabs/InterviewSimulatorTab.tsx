@@ -146,7 +146,7 @@ function SetupScreen({
           <h3 className="font-syne font-semibold" style={{ color: "var(--text-primary)", fontSize: 15 }}>
             Interview Type
           </h3>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {INTERVIEW_TYPES.map(t => {
               const Icon = t.icon
               const isSelected = selectedType === t.id
@@ -686,7 +686,7 @@ function FinalReportScreen({
       </div>
 
       {/* 3 Insight cards */}
-      <div className="grid grid-cols-3 gap-4 animate-fade-up">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 animate-fade-up">
         {[
           { label: "Strongest Area", value: report.strongest_area, color: "var(--accent-mint)", icon: "💪" },
           { label: "Weakest Area",   value: report.weakest_area,   color: "var(--accent-rose)", icon: "⚠️" },
@@ -760,7 +760,7 @@ function FinalReportScreen({
       </div>
 
       {/* CTAs */}
-      <div className="flex gap-3 animate-fade-up">
+      <div className="flex flex-col sm:flex-row gap-3 animate-fade-up">
         <button
           onClick={onRetake}
           className="flex-1 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all duration-150"

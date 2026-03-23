@@ -238,7 +238,7 @@ export function AnalysisTab() {
             <div className="rounded-xl p-5" style={{ background: 'var(--bg-surface)', border: '1px solid var(--bg-border)' }}>
               <h2 className="font-syne font-semibold mb-4" style={{ color: 'var(--text-primary)', fontSize: 15 }}>Job Description</h2>
 
-              <div className="grid grid-cols-2 gap-3 mb-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                 <div>
                   <label className="text-label block mb-1.5" style={{ color: 'var(--text-muted)' }}>TARGET ROLE</label>
                   <input className="w-full rounded-lg px-3 py-2 text-sm outline-none transition-all duration-200"
@@ -297,9 +297,11 @@ export function AnalysisTab() {
             {result && (
               <>
                 <div className="rounded-xl p-5" style={{ background: 'var(--bg-surface)', border: '1px solid var(--bg-border)' }}>
-                  <div className="flex items-center gap-6 mb-5">
-                    <CircularProgress score={result.skill_match_score ?? result.skill_match_percentage ?? 0} animated={ringAnimated} />
-                    <div className="flex-1 space-y-3">
+                  <div className="flex flex-col sm:flex-row items-center sm:items-start md:items-center gap-6 mb-5">
+                    <div className="flex-shrink-0">
+                      <CircularProgress score={result.skill_match_score ?? result.skill_match_percentage ?? 0} animated={ringAnimated} />
+                    </div>
+                    <div className="flex-1 w-full space-y-3">
                       <GaugeBar value={result.interview_probability ?? 0} label="Interview Probability" />
                       <GaugeBar value={result.skill_match_score ?? result.skill_match_percentage ?? 0} label="Skill Match Score" />
                     </div>
@@ -313,7 +315,7 @@ export function AnalysisTab() {
                   )}
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {[
                     { title: "STRONG", skills: result.strong_match ?? [], type: "strong" as const },
                     { title: "MODERATE", skills: result.moderate_match ?? [], type: "moderate" as const },

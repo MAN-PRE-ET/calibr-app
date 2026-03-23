@@ -114,7 +114,7 @@ export function TrackingTab() {
         </div>
 
         {!loading && !error && (
-          <div className="flex items-center gap-6 text-sm font-mono">
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-sm font-mono">
             <span><span className="font-bold" style={{ color: 'var(--text-primary)' }}>{total}</span> <span style={{ color: 'var(--text-muted)' }}>TOTAL</span></span>
             <span><span className="font-bold" style={{ color: 'var(--accent-sky)' }}>{apps.filter(a => a.status === "In Review").length}</span> <span style={{ color: 'var(--text-muted)' }}>THIS WEEK</span></span>
             <span><span className="font-bold" style={{ color: 'var(--accent-amber)' }}>{interviewRate}%</span> <span style={{ color: 'var(--text-muted)' }}>INTERVIEW RATE</span></span>
@@ -148,9 +148,9 @@ export function TrackingTab() {
 
         {/* Kanban */}
         {loading ? (
-          <div className="grid grid-cols-5 gap-3">
+          <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 pb-4 custom-scrollbar">
             {COLUMNS.map(c => (
-              <div key={c.id} className="rounded-xl h-64 skeleton" style={{ background: 'var(--bg-surface)' }} />
+              <div key={c.id} className="rounded-xl h-64 skeleton min-w-[280px] w-[280px] shrink-0 snap-start" style={{ background: 'var(--bg-surface)' }} />
             ))}
           </div>
         ) : apps.length === 0 ? (
@@ -161,14 +161,14 @@ export function TrackingTab() {
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Analyze your first job to track it here →  Opportunity Analysis</p>
           </div>
         ) : (
-          <div className="grid grid-cols-5 gap-3">
+          <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 pb-4 custom-scrollbar">
             {COLUMNS.map(col => {
               const colApps = filtered.filter(a => a.status === col.id)
               return (
                 <div key={col.id}
                   onDragOver={e => e.preventDefault()}
                   onDrop={() => handleDrop(col.id)}
-                  className="rounded-xl p-3 min-h-64 flex flex-col transition-all duration-200"
+                  className="rounded-xl p-3 min-h-64 flex flex-col transition-all duration-200 min-w-[280px] w-[280px] shrink-0 snap-start"
                   style={{ background: 'var(--bg-surface)', border: '1px solid var(--bg-border)' }}>
                   {/* Column header */}
                   <div className="flex items-center justify-between mb-3 pb-2"

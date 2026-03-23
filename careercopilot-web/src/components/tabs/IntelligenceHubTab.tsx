@@ -300,9 +300,9 @@ export function IntelligenceHubTab({ onDemoLoad }: { onDemoLoad?: () => void } =
 
   if (loading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-4 md:p-6 space-y-6">
         <div className="h-10 w-56 rounded-xl skeleton" />
-        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[0,1,2,3].map(i => <KPISkeleton key={i} />)}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -315,7 +315,7 @@ export function IntelligenceHubTab({ onDemoLoad }: { onDemoLoad?: () => void } =
 
   if (error) {
     return (
-      <div className="p-6 flex flex-col items-center justify-center min-h-[400px] gap-4">
+      <div className="p-4 md:p-6 flex flex-col items-center justify-center min-h-[400px] gap-4">
         <AlertCircle className="w-10 h-10" style={{ color: 'var(--accent-rose)' }} />
         <p className="font-syne font-semibold" style={{ color: 'var(--text-primary)', fontSize: 18 }}>Something went wrong</p>
         <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>{error}</p>
@@ -331,10 +331,9 @@ export function IntelligenceHubTab({ onDemoLoad }: { onDemoLoad?: () => void } =
     return <OnboardingScreen onDemoLoad={onDemoLoad} onProfileUploaded={fetchMetrics} />
   }
 
-
   return (
-    <div className="p-6 space-y-6 pb-10">
-      <div className="animate-fade-up flex items-start justify-between">
+    <div className="p-4 md:p-6 space-y-6 pb-10">
+      <div className="animate-fade-up flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-h1 mb-1" style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, color: 'var(--text-primary)' }}>
             Intelligence Hub
@@ -345,14 +344,14 @@ export function IntelligenceHubTab({ onDemoLoad }: { onDemoLoad?: () => void } =
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 animate-fade-up">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 animate-fade-up">
         {kpiCards.map((card, i) => <MetricCard key={i} {...card} />)}
       </div>
 
       {/* Radar + Mini Kanban */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 animate-fade-up">
         {/* Skill Radar */}
-        <div className="rounded-xl p-5" style={{ background: 'var(--bg-surface)', border: '1px solid var(--bg-border)' }}>
+        <div className="rounded-xl p-4 md:p-5" style={{ background: 'var(--bg-surface)', border: '1px solid var(--bg-border)' }}>
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="font-syne font-semibold" style={{ color: 'var(--text-primary)', fontSize: 16 }}>Skill Confidence</h3>
@@ -384,7 +383,7 @@ export function IntelligenceHubTab({ onDemoLoad }: { onDemoLoad?: () => void } =
         </div>
 
         {/* Mini Kanban */}
-        <div className="rounded-xl p-5" style={{ background: 'var(--bg-surface)', border: '1px solid var(--bg-border)' }}>
+        <div className="rounded-xl p-4 md:p-5" style={{ background: 'var(--bg-surface)', border: '1px solid var(--bg-border)' }}>
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="font-syne font-semibold" style={{ color: 'var(--text-primary)', fontSize: 16 }}>Application Pipeline</h3>
@@ -392,11 +391,11 @@ export function IntelligenceHubTab({ onDemoLoad }: { onDemoLoad?: () => void } =
             </div>
             <ArrowRight className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
           </div>
-          <div className="grid grid-cols-5 gap-1.5 h-52">
+          <div className="flex overflow-x-auto snap-x snap-mandatory gap-2 h-52 pb-2 custom-scrollbar">
             {Object.entries(STATUS_COLORS).map(([status, color]) => {
               const cards = byStatus[status] || []
               return (
-                <div key={status} className="flex flex-col">
+                <div key={status} className="flex flex-col min-w-[130px] flex-1 snap-start">
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="text-[9px] font-medium uppercase tracking-widest truncate" style={{ color }}>{status.split(" ")[0]}</span>
                     <span className="font-mono text-[9px] font-bold px-1 py-0.5 rounded" style={{ background: `${color}15`, color }}>{cards.length}</span>
