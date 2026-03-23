@@ -150,21 +150,28 @@ export function CalibrAgentPanel({ isOpen, onClose, currentTab = "" }: Props) {
 
       {/* Input */}
       <div className="px-4 py-3 shrink-0" style={{ borderTop: '1px solid var(--bg-border)' }}>
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full"
-          style={{ background: 'var(--bg-elevated)', border: '1px solid var(--bg-border)' }}>
-          <input ref={inputRef} value={input}
-            id="calibr-agent-input"
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendMessage(input)}
-            placeholder="Ask CALIBR anything…"
-            disabled={isStreaming}
-            className="flex-1 bg-transparent outline-none text-sm disabled:opacity-40"
-            style={{ color: 'var(--text-primary)', fontFamily: 'DM Sans, sans-serif' }} />
+        <div className="flex items-center gap-2">
+          <div className="flex-1 flex items-center px-4 py-2.5 rounded-full"
+            style={{ background: 'var(--bg-elevated)', border: '1px solid var(--bg-border)' }}>
+            <input ref={inputRef} value={input}
+              id="calibr-agent-input"
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendMessage(input)}
+              placeholder="Ask CALIBR anything…"
+              disabled={isStreaming}
+              className="flex-1 bg-transparent outline-none text-sm disabled:opacity-40"
+              style={{ color: 'var(--text-primary)', fontFamily: 'DM Sans, sans-serif' }} />
+          </div>
+          
+          {/* Send Button placed outside to avoid browser AI extension overlaps */}
           <button onClick={() => sendMessage(input)}
             disabled={!input.trim() || isStreaming}
-            className="w-7 h-7 rounded-full flex items-center justify-center transition-all duration-200 disabled:opacity-40"
-            style={{ background: input.trim() ? 'var(--accent-mint)' : 'transparent' }}>
-            <SendHorizonal className="w-3.5 h-3.5" style={{ color: input.trim() ? 'var(--text-inverse)' : 'var(--text-muted)' }} />
+            className="w-10 h-10 shrink-0 flex items-center justify-center rounded-full transition-all duration-200 shadow-sm disabled:opacity-40 disabled:shadow-none"
+            style={{ 
+              background: input.trim() ? 'var(--accent-mint)' : 'var(--bg-elevated)',
+              border: '1px solid var(--bg-border)'
+            }}>
+            <SendHorizonal className="w-4 h-4" style={{ color: input.trim() ? 'var(--text-inverse)' : 'var(--text-muted)' }} />
           </button>
         </div>
         <p className="text-center mt-1.5 text-xs font-mono" style={{ color: 'var(--text-muted)', opacity: 0.5 }}>⌘ Enter to send</p>
