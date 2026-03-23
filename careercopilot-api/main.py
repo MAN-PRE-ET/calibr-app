@@ -914,25 +914,40 @@ def generate_resume_new(req: GenerateResumeRequest):
     if not app_rec:
         raise HTTPException(404, "Application not found.")
 
-    prompt = f"""Create tailored resume content for this candidate applying to {app_rec['role']} at {app_rec['company']}.
+    jd_summary = " ".join(app_rec.get('responsibilities', []))
+    prompt = f"""You are an expert PM resume writer at a top-tier recruiting firm.
+Generate a tailored resume for this candidate applying to {app_rec['role']}
+at {app_rec['company']}.
 
-CANDIDATE PROFILE:
-{json.dumps({k: v for k, v in profile.items() if k != 'raw_resume_text'}, indent=2)}
+Candidate profile: {json.dumps({k: v for k, v in profile.items() if k != 'raw_resume_text'})}
+Job description highlights: {jd_summary}
 
-JOB STRONG MATCH SKILLS: {json.dumps(app_rec.get('strong_skills', []))}
-JOB MODERATE MATCH SKILLS: {json.dumps(app_rec.get('moderate_skills', []))}
-JOB RESPONSIBILITIES: {json.dumps(app_rec.get('responsibilities', []))}
+STRICT RULES:
+1. Every bullet point must be SPECIFIC — include actual project names,
+   actual numbers, actual decisions made. Never write generic statements.
+2. Use strong PM action verbs: Defined, Shipped, Designed, Prioritised,
+   Cut, Validated, Launched, Analyzed, Mapped, Owned
+3. Quantify wherever possible — users, features, weeks, percentage
+4. Each bullet must answer: WHAT did you do + WHY it mattered
+5. Never write: 'Utilized skills in X', 'Applied knowledge of Y',
+   'Developed strong Z skills' — these are banned phrases
+6. Tailor every bullet to the specific JD requirements
+7. Do NOT invent experience. Only use what is in the candidate profile.
 
-Return ONLY valid JSON:
+Return ONLY valid JSON. No markdown. No explanation.
 {{
-  "summary": "3 tailored sentences for this specific role and company",
-  "skills_to_highlight": ["ordered list of skills by JD relevance, max 12"],
-  "projects_to_include": ["2-3 most relevant project names"],
-  "experience_bullets": ["3-5 achievement bullets tailored to this JD role"]
-}}
-
-Do NOT invent experience. Only use what's in the profile.
-Return ONLY valid JSON. No markdown, no backticks, no explanation."""
+  "summary": "string (3 sentences, specific, tailored to JD, mentions the actual product name and real achievement)",
+  "skills_to_highlight": ["ordered by JD relevance, max 12"],
+  "experience_bullets": ["5-7 bullets, each SPECIFIC with project name + real detail + outcome"],
+  "projects": [
+    {{
+      "name": "string",
+      "description": "string (2 sentences, specific, with real details)",
+      "bullets": ["3-4 specific bullets with real numbers/decisions"]
+    }}
+  ],
+  "why_this_role": "string (1 sentence connecting candidate specifically to this company/role)"
+}}"""
 
     raw = call_groq(prompt)
     content = parse_groq_json(raw)
@@ -941,61 +956,88 @@ Return ONLY valid JSON. No markdown, no backticks, no explanation."""
         raise HTTPException(500, f"AI generation failed: {content.get('raw', '')[:200]}")
 
     # Build PDF with ReportLab
+    import re
+    from reportlab.lib.units import inch
     name = profile.get("name") or "Candidate"
     pdf_filename = f"resume_{app_rec['id'][:8]}.pdf"
     pdf_path = os.path.join("resumes", pdf_filename)
 
-    doc = SimpleDocTemplate(pdf_path, pagesize=letter, rightMargin=60, leftMargin=60, topMargin=60, bottomMargin=40)
+    margin = 0.75 * inch
+    doc = SimpleDocTemplate(pdf_path, pagesize=letter, rightMargin=margin, leftMargin=margin, topMargin=margin, bottomMargin=margin)
     styles = getSampleStyleSheet()
 
-    name_style = ParagraphStyle("Name", parent=styles["Heading1"], fontSize=22, spaceAfter=4, textColor=colors.HexColor("#0A0A0A"), fontName="Helvetica-Bold")
-    contact_style = ParagraphStyle("Contact", parent=styles["Normal"], fontSize=10, textColor=colors.HexColor("#555"), spaceAfter=12)
-    section_style = ParagraphStyle("Section", parent=styles["Heading2"], fontSize=12, spaceBefore=14, spaceAfter=4, textColor=colors.HexColor("#1A1A2E"), fontName="Helvetica-Bold")
-    body_style = ParagraphStyle("Body", parent=styles["Normal"], fontSize=10.5, leading=15, spaceAfter=8, textColor=colors.HexColor("#333"))
-    bullet_style = ParagraphStyle("Bullet", parent=styles["Normal"], fontSize=10.5, leading=15, leftIndent=14, spaceAfter=5, textColor=colors.HexColor("#333"))
+    name_style = ParagraphStyle("Name", parent=styles["Normal"], fontSize=24, spaceAfter=2, textColor=colors.HexColor("#0A0F1E"), fontName="Helvetica-Bold")
+    tagline_style = ParagraphStyle("Tagline", parent=styles["Normal"], fontSize=11, spaceAfter=4, textColor=colors.HexColor("#00C896"), fontName="Helvetica")
+    contact_style = ParagraphStyle("Contact", parent=styles["Normal"], fontSize=9, textColor=colors.HexColor("#888888"), spaceAfter=16)
+    
+    section_style = ParagraphStyle("Section", parent=styles["Normal"], fontSize=10, spaceBefore=12, spaceAfter=2, textColor=colors.HexColor("#0A0F1E"), fontName="Helvetica-Bold", textTransform="uppercase")
+    body_style = ParagraphStyle("Body", parent=styles["Normal"], fontSize=10, leading=14, spaceAfter=8, textColor=colors.HexColor("#333333"))
+    bullet_style = ParagraphStyle("Bullet", parent=styles["Normal"], fontSize=10, leading=14, leftIndent=15, spaceAfter=4, textColor=colors.HexColor("#333333"))
+
+    def SectionHeader(title):
+        return [
+            Paragraph(f"<b>{title.upper()}</b>", section_style),
+            HRFlowable(width="100%", thickness=1, color=colors.HexColor("#00C896"), spaceBefore=2, spaceAfter=6)
+        ]
 
     flowables = []
-    flowables.append(Paragraph(f"<b>{name}</b>", name_style))
+    
+    flowables.append(Paragraph(f"{name}", name_style))
+    if content.get("why_this_role"):
+        flowables.append(Paragraph(content["why_this_role"], tagline_style))
     email = f"{name.lower().replace(' ', '.')}@email.com"
     flowables.append(Paragraph(f"{email} | linkedin.com/in/{name.lower().replace(' ', '')}", contact_style))
-    flowables.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor("#00E5A0"), spaceAfter=12))
 
-    flowables.append(Paragraph("<b>PROFESSIONAL SUMMARY</b>", section_style))
-    flowables.append(Paragraph(content.get("summary", ""), body_style))
+    if content.get("summary"):
+        flowables.extend(SectionHeader("Professional Summary"))
+        flowables.append(Paragraph(content["summary"], body_style))
 
-    flowables.append(Paragraph("<b>CORE SKILLS</b>", section_style))
-    skills_text = " • ".join(content.get("skills_to_highlight", profile.get("skills", [])))
-    flowables.append(Paragraph(skills_text, body_style))
+    if content.get("skills_to_highlight"):
+        flowables.extend(SectionHeader("Core Skills"))
+        chip_strings = []
+        for s in content["skills_to_highlight"]:
+            chip_strings.append(f'<font color="#00C896" backColor="#E6FAf5">&nbsp;&nbsp;{s}&nbsp;&nbsp;</font>')
+        flowables.append(Paragraph(" &nbsp;&nbsp; ".join(chip_strings), body_style))
 
-    flowables.append(Paragraph("<b>PROFESSIONAL EXPERIENCE</b>", section_style))
-    for bullet in content.get("experience_bullets", []):
-        flowables.append(Paragraph(f"• {bullet}", bullet_style))
+    if content.get("experience_bullets"):
+        flowables.extend(SectionHeader("Professional Experience"))
+        for b in content["experience_bullets"]:
+            b_bolded = re.sub(r'^([A-Za-z]+)', r'<b>\1</b>', b)
+            flowables.append(Paragraph(f"<font color='#00C896'>▸</font> {b_bolded}", bullet_style))
 
-    flowables.append(Paragraph("<b>PROJECTS</b>", section_style))
-    for proj in content.get("projects_to_include", profile.get("projects", [])[:2]):
-        flowables.append(Paragraph(f"• {proj}", bullet_style))
+    if content.get("projects"):
+        flowables.extend(SectionHeader("Projects"))
+        for proj in content["projects"]:
+            p_name = proj.get("name", "Project")
+            p_desc = proj.get("description", "")
+            flowables.append(Paragraph(f"<b>{p_name}</b> &nbsp;|&nbsp; <font color='#555'>{p_desc}</font>", body_style))
+            for pb in proj.get("bullets", []):
+                pb_bolded = re.sub(r'^([A-Za-z]+)', r'<b>\1</b>', pb)
+                flowables.append(Paragraph(f"<font color='#00C896'>▸</font> {pb_bolded}", bullet_style))
 
-    flowables.append(Paragraph("<b>EDUCATION</b>", section_style))
-    flowables.append(Paragraph(profile.get("education", ""), body_style))
+    if profile.get("education"):
+        flowables.extend(SectionHeader("Education"))
+        flowables.append(Paragraph(profile["education"], body_style))
 
     doc.build(flowables)
 
     # Log activity
     data["analysis_history"].insert(0, {
         "type": "resume_generated",
-        "text": f"Resume generated for {app_rec['role']} at {app_rec['company']}",
+        "text": f"Resume generated for {app_rec['role']} at {app_rec['company']} (CALIBR Tailored)",
         "timestamp": now_iso(),
         "application_id": req.application_id,
     })
     save_data(data)
 
+    # Note: keep the frontend preview properties safe so it doesn't break ApplyTab preview card
     return {
         "status": "success",
         "download_url": f"/api/resume/download/{pdf_filename}",
         "preview": {
             "summary": content.get("summary", ""),
             "highlighted_skills": content.get("skills_to_highlight", [])[:6],
-            "selected_projects": content.get("projects_to_include", []),
+            "selected_projects": [p.get("name") for p in content.get("projects", [])][:2],
         },
     }
 
