@@ -68,7 +68,7 @@ function SkillChip({ label, color, bg, border }: { label: string; color: string;
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-export function ApplyTab() {
+export function AnalysisTab() {
   const [resumeFile, setResumeFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
   const [uploadedProfile, setUploadedProfile] = useState<any>(null)
