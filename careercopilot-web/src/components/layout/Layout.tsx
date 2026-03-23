@@ -33,13 +33,25 @@ export function Layout({
             </div>
             <span className="font-syne font-bold tracking-widest text-sm" style={{ color: 'var(--accent-primary)' }}>CALIBR</span>
           </div>
-          <button
-            onClick={() => setAgentOpen(o => !o)}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-mono transition-all duration-200"
-            style={{ background: 'var(--bg-elevated)', color: 'var(--accent-primary)', border: '1px solid var(--bg-border)' }}
-          >
-            AI
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setActiveTab('settings')}
+              className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200"
+              style={{
+                background: activeTab === 'settings' ? 'var(--accent-primary)' : 'transparent',
+                color: activeTab === 'settings' ? 'var(--text-inverse)' : 'var(--text-muted)',
+              }}
+            >
+              ⚙
+            </button>
+            <button
+              onClick={() => setAgentOpen(o => !o)}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-mono transition-all duration-200"
+              style={{ background: 'var(--bg-elevated)', color: 'var(--accent-primary)', border: '1px solid var(--bg-border)' }}
+            >
+              AI
+            </button>
+          </div>
         </div>
 
         {/* Page content */}
@@ -53,14 +65,35 @@ export function Layout({
         </div>
       </div>
 
-      {/* AI Copilot Panel */}
+      {/* AI Copilot Panel - Desktop */}
       {agentOpen && (
-        <div className="hidden lg:flex w-72 xl:w-80 shrink-0 flex-col border-l" style={{ borderColor: 'var(--bg-border)' }}>
+        <div className="hidden lg:flex w-72 xl:w-80 shrink-0 flex-col border-l transition-all duration-300" style={{ borderColor: 'var(--bg-border)' }}>
           <CalibrAgentPanel
             isOpen={agentOpen}
             onClose={() => setAgentOpen(false)}
             currentTab={activeTab}
           />
+        </div>
+      )}
+
+      {/* AI Copilot Panel - Mobile Slide-over */}
+      {agentOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 z-50 flex justify-end transition-opacity duration-300" 
+          style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(2px)' }}
+          onClick={() => setAgentOpen(false)}
+        >
+          <div 
+            className="w-[85vw] max-w-sm h-full flex flex-col shadow-2xl transition-transform duration-300 transform translate-x-0" 
+            style={{ background: 'var(--bg-base)', borderLeft: '1px solid var(--bg-border)' }} 
+            onClick={e => e.stopPropagation()}
+          >
+            <CalibrAgentPanel
+              isOpen={agentOpen}
+              onClose={() => setAgentOpen(false)}
+              currentTab={activeTab}
+            />
+          </div>
         </div>
       )}
       {/* Collapsed FAB */}
