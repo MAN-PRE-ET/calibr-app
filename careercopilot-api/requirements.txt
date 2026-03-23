@@ -7,4 +7,3 @@ python-docx
 reportlab
 python-multipart
 python-dotenv
-sentence-transformers

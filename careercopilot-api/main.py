@@ -24,7 +24,6 @@ from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
-from sentence_transformers import SentenceTransformer, util
 
 load_dotenv()
 
@@ -39,7 +38,6 @@ DATA_FILE = os.getenv("DATA_FILE", "calibr_data.json")
 GROQ_MODEL = "llama-3.3-70b-versatile"
 
 groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
-embed_model = SentenceTransformer("all-MiniLM-L6-v2")
 
 app = FastAPI(title="CALIBR AI Backend")
 
