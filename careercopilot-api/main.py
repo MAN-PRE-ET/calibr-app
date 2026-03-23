@@ -973,16 +973,19 @@ Return ONLY valid JSON. No markdown, no backticks, no explanation."""
     })
     save_data(data)
 
+# Get the base URL from an environment variable (set this in Render)
+    # Default to localhost if not found
+    base_url = os.getenv("API_BASE_URL", "http://localhost:8000")
+    
     return {
         "status": "success",
-        "download_url": f"http://localhost:8000/resumes/{pdf_filename}",
+        "download_url": f"{base_url}/resumes/{pdf_filename}",
         "preview": {
             "summary": content.get("summary", ""),
             "highlighted_skills": content.get("skills_to_highlight", [])[:6],
             "selected_projects": content.get("projects_to_include", []),
         },
     }
-
 
 
 # ─────────────────────────────────────────────────────────────────────────────

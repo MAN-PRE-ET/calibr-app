@@ -1,5 +1,10 @@
 {
-  "buildCommand": "cd careercopilot-web && npm install && npm run build",
+  "buildCommand": "cd careercopilot-web && npm install && npx vite build",
   "outputDirectory": "careercopilot-web/dist",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
 }
