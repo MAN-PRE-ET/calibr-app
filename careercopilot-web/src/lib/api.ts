@@ -147,6 +147,9 @@ export interface DashboardMetrics {
 export interface ResumeGenerateResult {
   status: string
   download_url: string
+  ats_score?: number
+  human_score?: number
+  keywords_matched?: string
   preview: {
     summary: string
     highlighted_skills: string[]

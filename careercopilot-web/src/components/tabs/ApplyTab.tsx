@@ -396,14 +396,54 @@ export function ApplyTab() {
                   <p className="text-sm mb-3" style={{ color: 'var(--text-muted)' }}>Generate a PDF resume tailored to this exact job description using Groq AI.</p>
 
                   {generateResult ? (
-                    <div className="flex items-center gap-3">
-                      <CheckCircle2 className="w-5 h-5" style={{ color: 'var(--accent-mint)' }} />
-                      <p className="text-sm" style={{ color: 'var(--accent-mint)' }}>Resume generated!</p>
-                      <a href={generateResult.download_url} target="_blank" rel="noopener noreferrer"
-                        className="ml-auto flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold"
-                        style={{ background: 'var(--accent-mint)', color: 'var(--text-inverse)', fontFamily: 'Syne, sans-serif' }}>
-                        <Download className="w-3.5 h-3.5" /> Download PDF
-                      </a>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <CheckCircle2 className="w-5 h-5" style={{ color: 'var(--accent-mint)' }} />
+                          <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Resume generated successfully!</p>
+                        </div>
+                        <a href={generateResult.download_url} target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-90 transition-opacity"
+                          style={{ background: 'var(--accent-mint)', color: 'var(--text-inverse)', fontFamily: 'Syne, sans-serif' }}>
+                          <Download className="w-3.5 h-3.5" /> Download PDF
+                        </a>
+                      </div>
+
+                      {generateResult.ats_score !== undefined && (
+                        <div className="p-4 rounded-xl border mt-2" style={{ background: 'var(--bg-elevated)', borderColor: 'rgba(0,229,160,0.1)' }}>
+                          <h4 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--text-primary)', fontFamily: 'Syne, sans-serif' }}>
+                            <Sparkles className="w-3.5 h-3.5" style={{ color: 'var(--accent-mint)' }} />
+                            Resume Optimization Score
+                          </h4>
+                          <div className="space-y-3">
+                            <div>
+                              <div className="flex justify-between text-xs mb-1 font-medium">
+                                <span style={{ color: 'var(--text-secondary)' }}>ATS System Score</span>
+                                <span style={{ color: 'var(--accent-mint)' }}>{generateResult.ats_score}%</span>
+                              </div>
+                              <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ background: 'rgba(0,0,0,0.2)' }}>
+                                <div className="h-full rounded-full" style={{ width: `${generateResult.ats_score}%`, background: 'var(--accent-mint)' }} />
+                              </div>
+                            </div>
+                            <div>
+                              <div className="flex justify-between text-xs mb-1 font-medium">
+                                <span style={{ color: 'var(--text-secondary)' }}>Human Recruiter Score</span>
+                                <span style={{ color: 'var(--text-primary)' }}>{generateResult.human_score}%</span>
+                              </div>
+                              <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ background: 'rgba(0,0,0,0.2)' }}>
+                                <div className="h-full rounded-full" style={{ width: `${generateResult.human_score}%`, background: 'var(--accent-mint)', opacity: 0.8 }} />
+                              </div>
+                            </div>
+                            <p className="text-xs pt-1" style={{ color: 'var(--text-muted)' }}>
+                              Must-Have Keywords matched: <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{generateResult.keywords_matched}</span>
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      <p className="text-xs italic text-center mt-3 pt-2" style={{ color: 'var(--text-muted)', borderTop: '1px solid var(--bg-border)' }}>
+                        Upload this resume to CALIBR to verify your match score improved. Target: 85%+
+                      </p>
                     </div>
                   ) : (
                     <button onClick={handleGenerate} disabled={generating}

@@ -207,6 +207,29 @@ def call_groq(prompt: str, system: str = "", temperature: float = 0.2) -> str:
     return response.choices[0].message.content or ""
 
 
+def call_groq_json(prompt: str, system: str = "", temperature: float = 0.3) -> dict:
+    """Call Groq, enforce JSON response, and parse it."""
+    if not groq_client:
+        raise RuntimeError("GROQ_API_KEY is not set.")
+    messages = []
+    if system:
+        messages.append({"role": "system", "content": system})
+    messages.append({"role": "user", "content": prompt})
+    try:
+        response = groq_client.chat.completions.create(
+            model="llama3-8b-8192",  # Defaulting to 8b for structured high speed pipeline
+            messages=messages,
+            temperature=temperature,
+            max_tokens=3000,
+            response_format={"type": "json_object"}
+        )
+        content = response.choices[0].message.content or ""
+        return json.loads(content)
+    except Exception as e:
+        logger.error(f"Groq JSON call failed: {e}")
+        return {"error": str(e), "raw": getattr(response, 'choices', [{}])[0].get('message', {}).get('content', '') if 'response' in locals() else ""}
+
+
 def parse_groq_json(raw: str) -> dict:
     """Strip markdown fences and parse JSON. Returns error dict on failure."""
     clean = re.sub(r"```(?:json)?", "", raw).strip().rstrip("`").strip()
@@ -914,130 +937,225 @@ def generate_resume_new(req: GenerateResumeRequest):
     if not app_rec:
         raise HTTPException(404, "Application not found.")
 
+    role = app_rec.get("role", "Candidate")
+    company = app_rec.get("company", "Company")
     jd_summary = " ".join(app_rec.get('responsibilities', []))
-    prompt = f"""You are an expert PM resume writer at a top-tier recruiting firm.
-Generate a tailored resume for this candidate applying to {app_rec['role']}
-at {app_rec['company']}.
-
-Candidate profile: {json.dumps({k: v for k, v in profile.items() if k != 'raw_resume_text'})}
-Job description highlights: {jd_summary}
-
-STRICT RULES:
-1. Every bullet point must be SPECIFIC — include actual project names,
-   actual numbers, actual decisions made. Never write generic statements.
-2. Use strong PM action verbs: Defined, Shipped, Designed, Prioritised,
-   Cut, Validated, Launched, Analyzed, Mapped, Owned
-3. Quantify wherever possible — users, features, weeks, percentage
-4. Each bullet must answer: WHAT did you do + WHY it mattered
-5. Never write: 'Utilized skills in X', 'Applied knowledge of Y',
-   'Developed strong Z skills' — these are banned phrases
-6. Tailor every bullet to the specific JD requirements
-7. Do NOT invent experience. Only use what is in the candidate profile.
-
-Return ONLY valid JSON. No markdown. No explanation.
+    
+    # ─── STEP 1: JD Parser
+    prompt_jd = f"""Analyze this job description for {role} at {company}.
+JD Highlights: {jd_summary}
+Return ONLY valid JSON:
 {{
-  "summary": "string (3 sentences, specific, tailored to JD, mentions the actual product name and real achievement)",
-  "skills_to_highlight": ["ordered by JD relevance, max 12"],
-  "experience_bullets": ["5-7 bullets, each SPECIFIC with project name + real detail + outcome"],
+  "must_have_skills": ["max 8 listed as required"],
+  "nice_to_have_skills": ["max 5 listed as preferred"],
+  "key_action_verbs": ["e.g. define, conduct, analyze"],
+  "exact_phrases_to_mirror": ["max 6 exact phrases from JD"],
+  "company_priorities": ["what company cares about most"],
+  "role_level": "junior / mid / senior",
+  "domain": "e.g. payments, saas"
+}}"""
+    jd_analysis = call_groq_json(prompt_jd)
+    must_have = jd_analysis.get('must_have_skills', app_rec.get('strong_skills', []))
+    
+    # ─── STEP 2: Skill Gap Bridge
+    prompt_bridge = f"""Given this candidate profile: {json.dumps({k: v for k, v in profile.items()})}
+And these required skills: {must_have}
+
+For each required skill, find the best evidence from the candidate's actual experience.
+If they have direct experience, use it. If not, find the closest adjacent experience.
+Return ONLY valid JSON:
+{{
+  "skill_evidence": [
+    {{
+      "skill": "string",
+      "has_directly": true,
+      "best_evidence": "specific bullet from their experience",
+      "strength": "strong/adjacent/weak"
+    }}
+  ]
+}}"""
+    skill_evidence_res = call_groq_json(prompt_bridge)
+    skill_evidence = skill_evidence_res.get("skill_evidence", [])
+
+    # ─── STEP 3 & 4: Resume Generation & Scoring Loop
+    max_retries = 2
+    best_resume = None
+    best_score_data = {"pass": False, "ats_score": 0, "human_score": 0, "missing_keywords": [], "weak_bullets": []}
+    
+    for _ in range(max_retries + 1):
+        prompt_gen = f"""SYSTEM: You are a world-class PM resume writer who has helped 500+ candidates get hired.
+Your resumes are specific, honest, and ruthlessly tailored.
+
+USER: Write a resume for {profile.get('name')} applying to {role} at {company}.
+CANDIDATE PROFILE: {json.dumps({k: v for k, v in profile.items() if k != 'raw_resume_text'})}
+JD ANALYSIS:
+Must-have skills: {must_have}
+Key phrases to mirror: {jd_analysis.get('exact_phrases_to_mirror', [])}
+Company priorities: {jd_analysis.get('company_priorities', [])}
+Key action verbs: {jd_analysis.get('key_action_verbs', [])}
+SKILL EVIDENCE AVAILABLE: {json.dumps(skill_evidence)}
+
+GENERATION RULES — follow every single one:
+RULE 1: MIRROR JD LANGUAGE. Use the exact phrases from exact_phrases_to_mirror verbatim. ATS matches exact phrases.
+RULE 2: LEAD WITH TOP PRIORITY. The first must_have skill goes in summary and first bullet.
+RULE 3: PROVE EVERY CLAIM. Format: [Action verb] + [specific project] + [specific outcome] + [why it mattered].
+RULE 4: QUANTIFY EVERYTHING where honest (users, features, weeks, %, etc).
+RULE 5: USE JD ACTION VERBS natively.
+RULE 6: ZERO FILLER PHRASES. 'Utilized skills in X', 'Applied knowledge of Y' etc are banned.
+RULE 7: HONEST ONLY. Do not invent experience. Link adjacencies.
+RULE 8: STRUCTURE FOR ATS + HUMAN. Summary: 3 sentences. Skills: must-haves first. Experience: 5-7 bullets total across projects.
+
+Return ONLY valid JSON.
+{{
+  "summary": "string (3 sentences)",
+  "skills_ordered": ["must-haves first, max 14"],
+  "experience_bullets": [
+    {{
+      "project": "string",
+      "bullet": "string",
+      "jd_skill_proven": "string"
+    }}
+  ],
   "projects": [
     {{
       "name": "string",
-      "description": "string (2 sentences, specific, with real details)",
-      "bullets": ["3-4 specific bullets with real numbers/decisions"]
+      "tagline": "string",
+      "impact_bullets": ["3 specific bullets with numbers"]
     }}
   ],
-  "why_this_role": "string (1 sentence connecting candidate specifically to this company/role)"
+  "why_this_company": "string (1 sentence specific to company)"
 }}"""
+        generated_resume = call_groq_json(prompt_gen)
+        
+        prompt_score = f"""You are a strict ATS system and a senior recruiter. Score this resume against this JD.
+Resume: {json.dumps(generated_resume)}
+JD Must-have skills: {must_have}
+JD Exact phrases: {jd_analysis.get('exact_phrases_to_mirror', [])}
 
-    raw = call_groq(prompt)
-    content = parse_groq_json(raw)
+Return ONLY valid JSON:
+{{
+  "ats_score": 85,
+  "human_score": 80,
+  "missing_keywords": ["must-have skills missing"],
+  "weak_bullets": ["bullets that are vague"],
+  "pass": true
+}}"""
+        score_data = call_groq_json(prompt_score)
+        
+        if score_data.get("ats_score", 0) > best_score_data.get("ats_score", 0):
+            best_resume = generated_resume
+            best_score_data = score_data
+            
+        if score_data.get("pass"):
+            break
 
-    if "error" in content:
-        raise HTTPException(500, f"AI generation failed: {content.get('raw', '')[:200]}")
-
-    # Build PDF with ReportLab
+    generated_resume = best_resume if best_resume else generated_resume
+    if "error" in generated_resume:
+        raise HTTPException(500, f"AI formatting failed: {generated_resume}")
+    
+    summary_text = generated_resume.get("summary", "")
+    skills_ordered = generated_resume.get("skills_ordered", [])
+    exp_bullets = [b.get("bullet", "") for b in generated_resume.get("experience_bullets", [])]
+    projects_list = generated_resume.get("projects", [])
+    why_co = generated_resume.get("why_this_company", "")
+    
+    # ─── STEP 5: PDF Formatting
     import re
     from reportlab.lib.units import inch
     name = profile.get("name") or "Candidate"
     pdf_filename = f"resume_{app_rec['id'][:8]}.pdf"
     pdf_path = os.path.join("resumes", pdf_filename)
 
-    margin = 0.75 * inch
+    margin = 0.65 * inch
     doc = SimpleDocTemplate(pdf_path, pagesize=letter, rightMargin=margin, leftMargin=margin, topMargin=margin, bottomMargin=margin)
     styles = getSampleStyleSheet()
 
-    name_style = ParagraphStyle("Name", parent=styles["Normal"], fontSize=24, spaceAfter=2, textColor=colors.HexColor("#0A0F1E"), fontName="Helvetica-Bold")
-    tagline_style = ParagraphStyle("Tagline", parent=styles["Normal"], fontSize=11, spaceAfter=4, textColor=colors.HexColor("#00C896"), fontName="Helvetica")
-    contact_style = ParagraphStyle("Contact", parent=styles["Normal"], fontSize=9, textColor=colors.HexColor("#888888"), spaceAfter=16)
+    name_style = ParagraphStyle("Name", parent=styles["Normal"], fontSize=20, spaceAfter=2, textColor=colors.HexColor("#0A0F1E"), fontName="Helvetica-Bold", alignment=1)
+    tagline_style = ParagraphStyle("Tagline", parent=styles["Normal"], fontSize=10, spaceAfter=4, textColor=colors.HexColor("#00C896"), fontName="Helvetica", alignment=1)
+    contact_style = ParagraphStyle("Contact", parent=styles["Normal"], fontSize=9, textColor=colors.HexColor("#888888"), spaceAfter=14, alignment=1)
     
-    section_style = ParagraphStyle("Section", parent=styles["Normal"], fontSize=10, spaceBefore=12, spaceAfter=2, textColor=colors.HexColor("#0A0F1E"), fontName="Helvetica-Bold", textTransform="uppercase")
-    body_style = ParagraphStyle("Body", parent=styles["Normal"], fontSize=10, leading=14, spaceAfter=8, textColor=colors.HexColor("#333333"))
-    bullet_style = ParagraphStyle("Bullet", parent=styles["Normal"], fontSize=10, leading=14, leftIndent=15, spaceAfter=4, textColor=colors.HexColor("#333333"))
+    section_style = ParagraphStyle("Section", parent=styles["Normal"], fontSize=9, spaceBefore=8, spaceAfter=4, textColor=colors.HexColor("#0A0F1E"), fontName="Helvetica-Bold", textTransform="uppercase")
+    body_style = ParagraphStyle("Body", parent=styles["Normal"], fontSize=9.5, leading=13, spaceAfter=8, textColor=colors.HexColor("#333333"))
+    skills_style = ParagraphStyle("Skills", parent=styles["Normal"], fontSize=9, leading=13, spaceAfter=8, textColor=colors.HexColor("#333333"))
+    bullet_style = ParagraphStyle("Bullet", parent=styles["Normal"], fontSize=9.5, leading=13, leftIndent=10, spaceAfter=3, textColor=colors.HexColor("#333333"))
+    why_style = ParagraphStyle("Why", parent=styles["Normal"], fontSize=9.5, leading=13, spaceBefore=12, spaceAfter=4, textColor=colors.HexColor("#333333"), fontName="Helvetica-Oblique", alignment=1)
 
     def SectionHeader(title):
         return [
             Paragraph(f"<b>{title.upper()}</b>", section_style),
-            HRFlowable(width="100%", thickness=1, color=colors.HexColor("#00C896"), spaceBefore=2, spaceAfter=6)
+            HRFlowable(width="100%", thickness=0.5, color=colors.HexColor("#00C896"), spaceBefore=2, spaceAfter=6)
         ]
 
     flowables = []
     
     flowables.append(Paragraph(f"{name}", name_style))
-    if content.get("why_this_role"):
-        flowables.append(Paragraph(content["why_this_role"], tagline_style))
+    flowables.append(Paragraph(role, tagline_style))
     email = f"{name.lower().replace(' ', '.')}@email.com"
     flowables.append(Paragraph(f"{email} | linkedin.com/in/{name.lower().replace(' ', '')}", contact_style))
+    flowables.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor("#00C896"), spaceBefore=2, spaceAfter=6))
 
-    if content.get("summary"):
+    if summary_text:
         flowables.extend(SectionHeader("Professional Summary"))
-        flowables.append(Paragraph(content["summary"], body_style))
+        flowables.append(Paragraph(summary_text, body_style))
 
-    if content.get("skills_to_highlight"):
-        flowables.extend(SectionHeader("Core Skills"))
-        chip_strings = []
-        for s in content["skills_to_highlight"]:
-            chip_strings.append(f'<font color="#00C896" backColor="#E6FAf5">&nbsp;&nbsp;{s}&nbsp;&nbsp;</font>')
-        flowables.append(Paragraph(" &nbsp;&nbsp; ".join(chip_strings), body_style))
+    if skills_ordered:
+        flowables.extend(SectionHeader("Skills"))
+        must_lower = set(s.lower() for s in must_have)
+        formatted_skills = []
+        for s in skills_ordered:
+            if s.lower() in must_lower:
+                formatted_skills.append(f"<b>{s}</b>")
+            else:
+                formatted_skills.append(s)
+        flowables.append(Paragraph(", ".join(formatted_skills), skills_style))
 
-    if content.get("experience_bullets"):
+    if exp_bullets:
         flowables.extend(SectionHeader("Professional Experience"))
-        for b in content["experience_bullets"]:
-            b_bolded = re.sub(r'^([A-Za-z]+)', r'<b>\1</b>', b)
-            flowables.append(Paragraph(f"<font color='#00C896'>▸</font> {b_bolded}", bullet_style))
+        for b in exp_bullets:
+            b_clean = re.sub(r'^([A-Za-z]+)', r'<b>\1</b>', b)
+            flowables.append(Paragraph(f"<font color='#00C896'>▸</font> {b_clean}", bullet_style))
 
-    if content.get("projects"):
+    if projects_list:
         flowables.extend(SectionHeader("Projects"))
-        for proj in content["projects"]:
+        for proj in projects_list:
             p_name = proj.get("name", "Project")
-            p_desc = proj.get("description", "")
-            flowables.append(Paragraph(f"<b>{p_name}</b> &nbsp;|&nbsp; <font color='#555'>{p_desc}</font>", body_style))
-            for pb in proj.get("bullets", []):
-                pb_bolded = re.sub(r'^([A-Za-z]+)', r'<b>\1</b>', pb)
-                flowables.append(Paragraph(f"<font color='#00C896'>▸</font> {pb_bolded}", bullet_style))
+            p_desc = proj.get("tagline", "")
+            flowables.append(Paragraph(f"<b>{p_name}</b> &nbsp;|&nbsp; <font color='#00C896'><i>{p_desc}</i></font>", body_style))
+            for pb in proj.get("impact_bullets", []):
+                pb_clean = re.sub(r'^([A-Za-z]+)', r'<b>\1</b>', pb)
+                flowables.append(Paragraph(f"<font color='#00C896'>▸</font> {pb_clean}", bullet_style))
 
     if profile.get("education"):
         flowables.extend(SectionHeader("Education"))
         flowables.append(Paragraph(profile["education"], body_style))
+
+    if why_co:
+        flowables.append(Paragraph(f"<b>Why {company}:</b> {why_co}", why_style))
 
     doc.build(flowables)
 
     # Log activity
     data["analysis_history"].insert(0, {
         "type": "resume_generated",
-        "text": f"Resume generated for {app_rec['role']} at {app_rec['company']} (CALIBR Tailored)",
+        "text": f"Resume generated for {role} at {company} (CALIBR ATS-Optimized)",
         "timestamp": now_iso(),
         "application_id": req.application_id,
     })
     save_data(data)
 
-    # Note: keep the frontend preview properties safe so it doesn't break ApplyTab preview card
+    keywords_matched = len(must_have) - len(best_score_data.get("missing_keywords", []))
+    keywords_total = max(len(must_have), 1)
+
     return {
         "status": "success",
         "download_url": f"/api/resume/download/{pdf_filename}",
+        "ats_score": best_score_data.get("ats_score", 0),
+        "human_score": best_score_data.get("human_score", 0),
+        "keywords_matched": f"{keywords_matched}/{keywords_total}",
         "preview": {
-            "summary": content.get("summary", ""),
-            "highlighted_skills": content.get("skills_to_highlight", [])[:6],
-            "selected_projects": [p.get("name") for p in content.get("projects", [])][:2],
+            "summary": summary_text,
+            "highlighted_skills": skills_ordered[:6],
+            "selected_projects": [p.get("name") for p in projects_list][:2],
         },
     }
 
