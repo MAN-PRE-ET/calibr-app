@@ -26,8 +26,12 @@ export function MobileNav({
 }) {
   return (
     <div
-      className="flex items-center justify-around px-2 py-2 border-t"
-      style={{ background: 'var(--bg-surface)', borderColor: 'var(--bg-border)' }}
+      className="flex items-center justify-around px-2 pt-2 border-t"
+      style={{
+        background: 'var(--bg-surface)',
+        borderColor: 'var(--bg-border)',
+        paddingBottom: 'max(8px, env(safe-area-inset-bottom))',
+      }}
     >
       {mobileNavItems.map(item => {
         const Icon = item.icon
@@ -36,7 +40,7 @@ export function MobileNav({
           <button
             key={item.id}
             onClick={() => setActiveTab(item.id)}
-            className="flex flex-col items-center gap-1 px-3 py-1 rounded-lg transition-all duration-200"
+            className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-all duration-200 relative"
             style={{ minWidth: 44, minHeight: 44 }}
           >
             <Icon
@@ -50,6 +54,12 @@ export function MobileNav({
               >
                 {item.name}
               </span>
+            )}
+            {isActive && (
+              <span
+                className="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full"
+                style={{ background: 'var(--accent-primary)' }}
+              />
             )}
           </button>
         )

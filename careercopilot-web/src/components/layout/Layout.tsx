@@ -12,7 +12,8 @@ export function Layout({
   activeTab: string
   setActiveTab: (id: string) => void
 }) {
-  const [agentOpen, setAgentOpen] = useState(true)
+  // Default closed on mobile (< 1024px), open on desktop
+  const [agentOpen, setAgentOpen] = useState(() => window.innerWidth >= 1024)
 
   return (
     <div className="flex h-screen w-full overflow-hidden" style={{ background: 'var(--bg-base)' }}>

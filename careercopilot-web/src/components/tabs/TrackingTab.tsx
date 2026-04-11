@@ -104,7 +104,7 @@ export function TrackingTab() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="p-6 pb-10 space-y-5">
+      <div className="p-4 md:p-6 pb-10 space-y-5">
         {/* Header + stats */}
         <div>
           <h1 className="text-h1 mb-1" style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, color: 'var(--text-primary)' }}>

@@ -155,7 +155,7 @@ export function ApplyTab() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="p-6 pb-10 space-y-5">
+      <div className="p-4 md:p-6 pb-10 space-y-5">
         {/* Header */}
         <div>
           <h1 className="text-h1 mb-1" style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, color: 'var(--text-primary)' }}>
@@ -256,7 +256,7 @@ export function ApplyTab() {
                 </div>
               </div>
 
-              <textarea rows={10} value={jdText} onChange={e => setJdText(e.target.value)}
+              <textarea rows={7} value={jdText} onChange={e => setJdText(e.target.value)}
                 placeholder="Paste the full job description here…"
                 className="w-full rounded-xl px-4 py-3 text-sm outline-none resize-none leading-relaxed transition-all duration-200"
                 style={{ background: 'var(--bg-elevated)', border: '1px solid var(--bg-border)', color: 'var(--text-primary)', fontFamily: 'DM Sans, sans-serif' }}

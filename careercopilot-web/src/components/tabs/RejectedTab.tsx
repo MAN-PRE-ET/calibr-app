@@ -57,7 +57,7 @@ export function RejectedTab() {
 
   if (loading) {
     return (
-      <div className="p-6 space-y-4">
+      <div className="p-4 md:p-6 space-y-4">
         {[0,1].map(i => <div key={i} className="h-48 rounded-xl skeleton" />)}
       </div>
     )
@@ -87,7 +87,7 @@ export function RejectedTab() {
         </div>
       )}
 
-      <div className="p-6 pb-10 space-y-6">
+      <div className="p-4 md:p-6 pb-10 space-y-6">
         {/* Header */}
         <div>
           <h1 className="text-h1 mb-1" style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, color: 'var(--text-primary)' }}>

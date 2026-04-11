@@ -24,7 +24,7 @@ export function AnalysisTab() {
 
   if (loading) {
     return (
-      <div className="p-6 space-y-4">
+      <div className="p-4 md:p-6 space-y-4">
         <div className="h-10 w-56 rounded-xl skeleton" />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">{[0,1,2].map(i => <div key={i} className="h-28 rounded-xl skeleton" />)}</div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">{[0,1].map(i => <div key={i} className="h-64 rounded-xl skeleton" />)}</div>
@@ -98,7 +98,7 @@ export function AnalysisTab() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="p-6 pb-10 space-y-6">
+      <div className="p-4 md:p-6 pb-10 space-y-6">
         <div>
           <h1 className="text-h1 mb-1" style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, color: 'var(--text-primary)' }}>Career Intelligence</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>Bloomberg-grade pattern analysis across your entire job search.</p>

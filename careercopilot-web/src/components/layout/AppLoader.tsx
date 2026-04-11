@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { warmUp } from "@/lib/api"
 
 export function AppLoader({ onComplete }: { onComplete: () => void }) {
   const [progress, setProgress] = useState(0)
@@ -8,6 +9,9 @@ export function AppLoader({ onComplete }: { onComplete: () => void }) {
   const fullTagline = "AGENTIC CAREER INTELLIGENCE"
 
   useEffect(() => {
+    // Kick off backend warm-up in parallel with the loading animation
+    warmUp()
+
     // Logo appears after 200ms
     const logoTimer = setTimeout(() => setShowLogo(true), 200)
 

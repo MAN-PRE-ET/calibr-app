@@ -69,7 +69,7 @@ function SetupScreen({
   const canStart = selectedApp !== "" && selectedType !== ""
 
   return (
-    <div className="p-6 space-y-6 pb-10">
+    <div className="p-4 md:p-6 space-y-6 pb-10">
       {/* Header */}
       <div className="flex items-center gap-3 animate-fade-up">
         <h1 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 28, color: "var(--text-primary)" }}>
@@ -298,7 +298,7 @@ function QuestionScreen({
   const formatTime = (s: number) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`
 
   return (
-    <div className="p-6 space-y-5 pb-10 max-w-3xl mx-auto">
+    <div className="p-4 md:p-6 space-y-5 pb-10 max-w-3xl mx-auto">
       {/* Top bar */}
       <div className="flex items-center justify-between animate-fade-up">
         <div className="flex items-center gap-2">

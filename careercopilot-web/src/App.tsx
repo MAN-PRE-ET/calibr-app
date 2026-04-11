@@ -1,15 +1,31 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react'
 import { Layout } from '@/components/layout/Layout'
-import { IntelligenceHubTab } from '@/components/tabs/IntelligenceHubTab'
-import { ApplyTab } from '@/components/tabs/ApplyTab'
-import { TrackingTab } from '@/components/tabs/TrackingTab'
-import { RejectedTab } from '@/components/tabs/RejectedTab'
-import { AnalysisTab } from '@/components/tabs/AnalysisTab'
-import { InterviewSimulatorTab } from '@/components/tabs/InterviewSimulatorTab'
 import { AppLoader } from '@/components/layout/AppLoader'
 import { DemoBanner } from '@/components/layout/DemoBanner'
 import { ToastProvider, useToast } from '@/lib/toast'
 import { calibrAPI } from '@/lib/api'
+
+// ─── Lazy-loaded tabs (each becomes a separate JS chunk) ─────────────────────
+const IntelligenceHubTab  = lazy(() => import('@/components/tabs/IntelligenceHubTab').then(m => ({ default: m.IntelligenceHubTab })))
+const ApplyTab            = lazy(() => import('@/components/tabs/ApplyTab').then(m => ({ default: m.ApplyTab })))
+const TrackingTab         = lazy(() => import('@/components/tabs/TrackingTab').then(m => ({ default: m.TrackingTab })))
+const RejectedTab         = lazy(() => import('@/components/tabs/RejectedTab').then(m => ({ default: m.RejectedTab })))
+const AnalysisTab         = lazy(() => import('@/components/tabs/AnalysisTab').then(m => ({ default: m.AnalysisTab })))
+const InterviewSimulatorTab = lazy(() => import('@/components/tabs/InterviewSimulatorTab').then(m => ({ default: m.InterviewSimulatorTab })))
+
+// ─── Tab loading skeleton ─────────────────────────────────────────────────────
+function TabSkeleton() {
+  return (
+    <div className="p-4 md:p-6 space-y-4 animate-fade-in">
+      <div className="h-8 w-48 rounded-xl skeleton" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[0,1,2,3].map(i => <div key={i} className="h-28 rounded-xl skeleton" />)}
+      </div>
+      <div className="h-64 rounded-xl skeleton" />
+    </div>
+  )
+}
+
 
 // ─── Page title map ─────────────────────────────────────────────────────────
 const PAGE_TITLES: Record<string, string> = {
@@ -154,7 +170,9 @@ function AppInner() {
               transition: 'opacity 200ms ease',
             }}
           >
-            {renderTab()}
+            <Suspense fallback={<TabSkeleton />}>
+              {renderTab()}
+            </Suspense>
           </div>
         </Layout>
       </div>

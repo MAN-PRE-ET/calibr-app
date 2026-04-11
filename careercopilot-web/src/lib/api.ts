@@ -12,19 +12,38 @@ async function apiFetch<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json", ...options.headers },
-    ...options,
-  })
-  if (!res.ok) {
-    let msg = `API error ${res.status}`
-    try {
-      const err = await res.json()
-      msg = err.detail || err.message || msg
-    } catch {}
-    throw new Error(msg)
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 15_000)
+  try {
+    const res = await fetch(`${API_BASE}${path}`, {
+      headers: { "Content-Type": "application/json", ...options.headers },
+      signal: controller.signal,
+      ...options,
+    })
+    if (!res.ok) {
+      let msg = `API error ${res.status}`
+      try {
+        const err = await res.json()
+        msg = err.detail || err.message || msg
+      } catch {}
+      throw new Error(msg)
+    }
+    return res.json()
+  } catch (err: any) {
+    if (err?.name === 'AbortError') throw new Error('Request timed out — the backend may be waking up. Please try again.')
+    throw err
+  } finally {
+    clearTimeout(timeout)
   }
-  return res.json()
+}
+
+/** Silently warm up the Render backend (free tier spins down after inactivity). */
+export async function warmUp(): Promise<void> {
+  try {
+    await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(30_000) })
+  } catch {
+    // silent — best-effort wake-up
+  }
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -70,6 +89,13 @@ export interface JobAnalysisResult {
     experience_level: string
     responsibilities: string[]
   }
+}
+
+export interface ScrapeJobResult {
+  status: string
+  company: string
+  role: string
+  jd_text: string
 }
 
 export interface Application {
@@ -181,6 +207,13 @@ export const calibrAPI = {
         return res.json()
       })
   },
+
+  /** Scrape a job posting URL to extract the job description */
+  scrapeJobUrl: (url: string): Promise<ScrapeJobResult> =>
+    apiFetch("/api/jobs/scrape", {
+      method: "POST",
+      body: JSON.stringify({ url }),
+    }),
 
   /** Analyze a job description against the candidate profile */
   analyzeJob: (payload: {
@@ -387,6 +420,7 @@ Object.assign(calibrAPI, {
 // Type-extend calibrAPI so TypeScript knows about the new methods
 declare module "./api" {
   interface CalibRAPI {
+    scrapeJobUrl(url: string): Promise<ScrapeJobResult>
     startInterview(application_id: string, interview_type: InterviewType): Promise<InterviewSession>
     evaluateAnswer(session_id: string, question_id: number, answer: string): Promise<QuestionEvaluation>
     completeInterview(session_id: string): Promise<InterviewReport>

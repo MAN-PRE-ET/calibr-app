@@ -184,9 +184,9 @@ function OnboardingScreen({
         </p>
       </div>
 
-      <div className="w-full flex items-start justify-center mb-10 animate-fade-up">
+      <div className="w-full flex flex-col sm:flex-row items-center sm:items-start justify-center mb-10 animate-fade-up gap-4 sm:gap-0">
         {ONBOARDING_STEPS.map((step, i) => (
-          <div key={step.n} className="flex items-start">
+          <div key={step.n} className="flex sm:items-start items-center">
             <div className="flex flex-col items-center text-center" style={{ width: 148 }}>
               <div
                 className="w-11 h-11 rounded-full flex items-center justify-center font-bold text-sm mb-3"
@@ -198,7 +198,7 @@ function OnboardingScreen({
               <p className="text-xs leading-relaxed px-2" style={{ color: "var(--text-muted)", fontFamily: "DM Sans, sans-serif" }}>{step.desc}</p>
             </div>
             {i < ONBOARDING_STEPS.length - 1 && (
-              <div className="mt-4 shrink-0" style={{ color: "var(--text-muted)", opacity: 0.35 }}>
+              <div className="hidden sm:block mt-4 shrink-0" style={{ color: "var(--text-muted)", opacity: 0.35 }}>
                 <ArrowRight style={{ width: 20, height: 20 }} />
               </div>
             )}

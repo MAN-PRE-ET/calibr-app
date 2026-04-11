@@ -11,6 +11,8 @@ import logging
 from datetime import datetime, timezone
 from typing import Optional
 
+import httpx
+from bs4 import BeautifulSoup
 import pdfplumber
 import docx
 from dotenv import load_dotenv
@@ -270,6 +272,9 @@ def apply_confidence_impact(current: dict[str, int], impact: dict[str, float]) -
 # ─────────────────────────────────────────────────────────────────────────────
 # REQUEST MODELS
 # ─────────────────────────────────────────────────────────────────────────────
+class ScrapeJobRequest(BaseModel):
+    url: str
+
 class AnalyzeJobRequest(BaseModel):
     jd_text: str
     company: str = ""
@@ -407,6 +412,49 @@ Return ONLY valid JSON. No markdown, no backticks, no explanation."""
         "profile": profile,
         "skill_confidence": merged,
         "extracted_text": text[:1500] + ("..." if len(text) > 1500 else ""),
+    }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# POST /api/jobs/scrape
+# ─────────────────────────────────────────────────────────────────────────────
+@app.post("/api/jobs/scrape")
+async def scrape_job(req: ScrapeJobRequest):
+    try:
+        async with httpx.AsyncClient(follow_redirects=True, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}) as client:
+            resp = await client.get(req.url, timeout=10.0)
+            resp.raise_for_status()
+    except Exception as e:
+        raise HTTPException(400, f"Failed to fetch URL: {str(e)}")
+
+    soup = BeautifulSoup(resp.text, 'html.parser')
+    for elem in soup(["script", "style", "nav", "footer", "header", "noscript", "svg", "button", "iframe"]):
+        elem.decompose()
+        
+    text = soup.get_text(separator='\n', strip=True)
+    if not text:
+        raise HTTPException(400, "Could not extract readable text from URL.")
+        
+    prompt = f"""Extract the core job description from this scraped web page text.
+RAW WEB TEXT:
+{text[:12000]}
+
+Return ONLY valid JSON with exactly these keys:
+{{
+  "company": "Company Name (if found, otherwise empty)",
+  "role": "Job Title (if found, otherwise empty)",
+  "cleaned_jd": "The full clean body of the job description without website navigation boilerplate. Preserve the paragraphs as a single string."
+}}
+"""
+    raw = call_groq_json(prompt)
+    if "error" in raw:
+        raise HTTPException(500, f"AI extraction failed: {raw.get('error')}")
+        
+    return {
+        "status": "success",
+        "company": raw.get("company", ""),
+        "role": raw.get("role", ""),
+        "jd_text": raw.get("cleaned_jd", text[:3000])
     }
 
 
