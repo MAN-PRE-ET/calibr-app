@@ -155,7 +155,7 @@ function AppInner() {
   }
 
   return (
-    <div className="flex flex-col h-screen w-full overflow-hidden" style={{ background: 'var(--bg-base)' }}>
+    <div className="flex flex-col w-full overflow-hidden" style={{ height: '100dvh', background: 'var(--bg-base)' }}>
       {/* Demo banner — above everything */}
       <DemoBanner
         demoActive={demoActive}

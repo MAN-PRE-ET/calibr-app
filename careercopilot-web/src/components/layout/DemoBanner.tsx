@@ -52,50 +52,42 @@ export function DemoBanner({
 
   return (
     <div
-      className="flex items-center gap-3 px-4 py-2 shrink-0"
+      className="flex items-center gap-2 px-3 py-1.5 shrink-0"
       style={{
         background: "rgba(245,158,11,0.08)",
         borderBottom: "1px solid rgba(245,158,11,0.2)",
       }}
     >
-      <Zap style={{ width: 13, height: 13, color: "var(--accent-amber)", flexShrink: 0 }} />
+      <Zap style={{ width: 12, height: 12, color: "var(--accent-amber)", flexShrink: 0 }} />
       <span
-        className="text-xs font-bold px-2 py-0.5 rounded-full"
+        className="text-xs font-bold px-1.5 py-0.5 rounded-full shrink-0"
         style={{
           background: "rgba(245,158,11,0.15)",
           color: "var(--accent-amber)",
           fontFamily: "JetBrains Mono, monospace",
+          fontSize: 10,
         }}
       >
-        Demo Mode
+        DEMO
       </span>
-      <span className="flex-1 text-xs" style={{ color: "var(--accent-amber)", opacity: 0.8 }}>
+      <span className="hidden sm:block flex-1 text-xs truncate" style={{ color: "var(--accent-amber)", opacity: 0.8 }}>
         Exploring with Arjun Mehta's sample data
       </span>
-      <div className="flex items-center gap-2">
-        <button
-          onClick={handleSeed}
-          disabled={seeding}
-          className="text-xs font-medium px-3 py-1 rounded-md transition-all duration-150"
-          style={{
-            background: "rgba(245,158,11,0.15)",
-            color: "var(--accent-amber)",
-            border: "1px solid rgba(245,158,11,0.25)",
-          }}
-        >
-          {seeding ? "Loading…" : "Reload"}
-        </button>
+      <span className="sm:hidden flex-1 text-xs" style={{ color: "var(--accent-amber)", opacity: 0.8 }}>
+        Arjun Mehta
+      </span>
+      <div className="flex items-center gap-1.5 shrink-0">
         <button
           onClick={handleReset}
           disabled={resetting}
-          className="text-xs font-medium px-3 py-1 rounded-md transition-all duration-150"
+          className="text-xs font-medium px-2 py-0.5 rounded-md transition-all duration-150"
           style={{
             background: "transparent",
             color: "var(--text-muted)",
             border: "1px solid var(--bg-border)",
           }}
         >
-          {resetting ? "Resetting…" : "Reset"}
+          {resetting ? "…" : "Reset"}
         </button>
         <button
           onClick={() => setDemoActive(false)}
