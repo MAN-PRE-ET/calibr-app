@@ -16,14 +16,14 @@ export function Layout({
   const [agentOpen, setAgentOpen] = useState(() => window.innerWidth >= 1024)
 
   return (
-    <div className="flex h-screen w-full overflow-hidden" style={{ background: 'var(--bg-base)' }}>
+    <div className="flex w-full overflow-hidden" style={{ height: '100dvh', background: 'var(--bg-base)' }}>
       {/* Sidebar — hidden on mobile */}
       <div className="hidden lg:flex">
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       </div>
 
       {/* Main content area */}
-      <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
         {/* Mobile top bar */}
         <div className="lg:hidden flex items-center justify-between px-4 py-3 border-b"
           style={{ borderColor: 'var(--bg-border)', background: 'var(--bg-surface)' }}>
@@ -55,8 +55,8 @@ export function Layout({
           </div>
         </div>
 
-        {/* Page content */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden relative">
+        {/* Page content — flex-1 + min-h-0 ensures it shrinks to fit, leaving room for MobileNav */}
+        <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden relative">
           {children}
         </main>
 
