@@ -154,8 +154,8 @@ function OnboardingScreen({
 
   return (
     <div
-      className="flex flex-col items-center justify-center text-center px-6"
-      style={{ minHeight: "calc(100vh - 80px)", maxWidth: 620, margin: "0 auto" }}
+      className="flex flex-col items-center justify-center text-center px-6 py-8"
+      style={{ minHeight: "calc(100dvh - 100px)", maxWidth: 620, margin: "0 auto" }}
     >
       <input
         ref={fileRef}
@@ -166,8 +166,9 @@ function OnboardingScreen({
         onChange={handleFile}
       />
 
-      <div className="mb-7 animate-fade-up">
-        <p style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 42, letterSpacing: "0.2em", color: "var(--accent-mint)", textShadow: "0 0 40px rgba(0,229,160,0.4)", lineHeight: 1 }}>
+      {/* Branding */}
+      <div className="mb-5 animate-fade-up">
+        <p style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 36, letterSpacing: "0.2em", color: "var(--accent-mint)", textShadow: "0 0 40px rgba(0,229,160,0.4)", lineHeight: 1 }}>
           CALIBR
         </p>
         <p style={{ fontFamily: "DM Sans, sans-serif", fontSize: 10, letterSpacing: "0.3em", color: "var(--text-muted)", textTransform: "uppercase", marginTop: 4 }}>
@@ -175,38 +176,18 @@ function OnboardingScreen({
         </p>
       </div>
 
-      <div className="mb-10 animate-fade-up">
-        <h1 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 28, color: "var(--text-primary)", lineHeight: 1.25, marginBottom: 10 }}>
-          Let’s calibrate your career
+      {/* Hero heading */}
+      <div className="mb-7 animate-fade-up">
+        <h1 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 26, color: "var(--text-primary)", lineHeight: 1.25, marginBottom: 8 }}>
+          Start by uploading your resume
         </h1>
-        <p style={{ color: "var(--text-muted)", fontSize: 14, maxWidth: 400, margin: "0 auto", fontFamily: "DM Sans, sans-serif", lineHeight: 1.7 }}>
-          Upload your resume and CALIBR will build your personalized career intelligence dashboard in under 30 seconds.
+        <p style={{ color: "var(--text-muted)", fontSize: 14, maxWidth: 380, margin: "0 auto", fontFamily: "DM Sans, sans-serif", lineHeight: 1.7 }}>
+          CALIBR extracts your skills and experience to build a personalized career intelligence dashboard in seconds.
         </p>
       </div>
 
-      <div className="w-full flex flex-col sm:flex-row items-center sm:items-start justify-center mb-10 animate-fade-up gap-4 sm:gap-0">
-        {ONBOARDING_STEPS.map((step, i) => (
-          <div key={step.n} className="flex sm:items-start items-center">
-            <div className="flex flex-col items-center text-center" style={{ width: 148 }}>
-              <div
-                className="w-11 h-11 rounded-full flex items-center justify-center font-bold text-sm mb-3"
-                style={{ background: `${step.color}12`, border: `2px solid ${step.color}`, color: step.color, fontFamily: "Syne, sans-serif", boxShadow: `0 0 18px ${step.color}25` }}
-              >
-                {step.n}
-              </div>
-              <p className="text-sm font-semibold mb-1" style={{ color: "var(--text-primary)", fontFamily: "Syne, sans-serif" }}>{step.title}</p>
-              <p className="text-xs leading-relaxed px-2" style={{ color: "var(--text-muted)", fontFamily: "DM Sans, sans-serif" }}>{step.desc}</p>
-            </div>
-            {i < ONBOARDING_STEPS.length - 1 && (
-              <div className="hidden sm:block mt-4 shrink-0" style={{ color: "var(--text-muted)", opacity: 0.35 }}>
-                <ArrowRight style={{ width: 20, height: 20 }} />
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      <div className="w-full max-w-sm space-y-3 animate-fade-up">
+      {/* ── PRIMARY CTA — upload first ── */}
+      <div className="w-full max-w-sm space-y-3 animate-fade-up mb-10">
         <button
           onClick={() => fileRef.current?.click()}
           disabled={uploading}
@@ -228,18 +209,18 @@ function OnboardingScreen({
           ) : (
             <>
               <UploadCloud style={{ width: 18, height: 18 }} />
-              Upload Your Resume to Begin
+              Upload Your Resume
             </>
           )}
         </button>
 
         <p className="text-xs" style={{ color: "var(--text-muted)", fontFamily: "DM Sans, sans-serif" }}>
-          Supports PDF, DOCX, TXT · Processed by AI in seconds
+          PDF, DOCX or TXT · Processed by AI in seconds
         </p>
 
         {onDemoLoad && (
           <div className="pt-1">
-            <p className="text-xs mb-2.5" style={{ color: "var(--text-muted)" }}>Or explore instantly with sample data:</p>
+            <p className="text-xs mb-2.5" style={{ color: "var(--text-muted)" }}>Or explore with sample data:</p>
             <LoadDemoButton onLoad={onDemoLoad} />
           </div>
         )}
