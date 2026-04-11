@@ -25,29 +25,30 @@ export function Layout({
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
         {/* Mobile top bar */}
-        <div className="lg:hidden flex items-center justify-between px-4 py-3 border-b"
+        <div className="lg:hidden flex items-center justify-between px-3 py-2 border-b"
           style={{ borderColor: 'var(--bg-border)', background: 'var(--bg-surface)' }}>
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded flex items-center justify-center animate-pulse-glow"
+            <div className="w-5 h-5 rounded flex items-center justify-center"
               style={{ background: 'var(--accent-primary)' }}>
-              <span className="font-bebas text-xs font-bold" style={{ color: 'var(--text-inverse)' }}>C</span>
+              <span className="font-bebas text-xs font-bold" style={{ color: 'var(--text-inverse)', fontSize: 10 }}>C</span>
             </div>
-            <span className="font-syne font-bold tracking-widest text-sm" style={{ color: 'var(--accent-primary)' }}>CALIBR</span>
+            <span className="font-syne font-bold tracking-widest text-xs" style={{ color: 'var(--accent-primary)' }}>CALIBR</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setActiveTab('settings')}
-              className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200"
+              className="w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-200"
               style={{
                 background: activeTab === 'settings' ? 'var(--accent-primary)' : 'transparent',
                 color: activeTab === 'settings' ? 'var(--text-inverse)' : 'var(--text-muted)',
+                fontSize: 14,
               }}
             >
               ⚙
             </button>
             <button
               onClick={() => setAgentOpen(o => !o)}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-mono transition-all duration-200"
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-mono transition-all duration-200"
               style={{ background: 'var(--bg-elevated)', color: 'var(--accent-primary)', border: '1px solid var(--bg-border)' }}
             >
               AI

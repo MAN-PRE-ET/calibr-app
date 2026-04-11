@@ -177,6 +177,15 @@
     color: var(--text-muted);
   }
 
+  /* Responsive headings — shrink on mobile */
+  .text-h1 {
+    font-size: clamp(20px, 5vw, 30px);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+  }
+
   /* Surfaces */
   .surface {
     background-color: var(--bg-surface);

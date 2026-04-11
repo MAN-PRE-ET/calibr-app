@@ -72,7 +72,7 @@ function MetricCard({
   const [hovered, setHovered] = useState(false)
   return (
     <div
-      className="rounded-xl p-5 cursor-default transition-all duration-200"
+      className="rounded-xl p-3 md:p-5 cursor-default transition-all duration-200"
       style={{
         background: 'var(--bg-surface)', border: '1px solid var(--bg-border)',
         borderLeft: `3px solid ${color}`,
@@ -283,7 +283,7 @@ export function IntelligenceHubTab({ onDemoLoad }: { onDemoLoad?: () => void } =
     return (
       <div className="p-4 md:p-6 space-y-6">
         <div className="h-10 w-56 rounded-xl skeleton" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {[0,1,2,3].map(i => <KPISkeleton key={i} />)}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -325,7 +325,7 @@ export function IntelligenceHubTab({ onDemoLoad }: { onDemoLoad?: () => void } =
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 animate-fade-up">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 animate-fade-up">
         {kpiCards.map((card, i) => <MetricCard key={i} {...card} />)}
       </div>
 
