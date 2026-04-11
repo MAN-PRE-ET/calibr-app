@@ -132,6 +132,7 @@ function OnboardingScreen({
   const fileRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
   const [uploading, setUploading] = useState(false)
+  const [loadingDemo, setLoadingDemo] = useState(false)
 
   const handleFile = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -139,10 +140,7 @@ function OnboardingScreen({
     setUploading(true)
     try {
       const result = await calibrAPI.uploadResume(file)
-      toast(
-        'success',
-        `✓ ${result.profile.name || "Profile"} uploaded — ${Object.keys(result.skill_confidence).length} skills detected`,
-      )
+      toast('success', `✓ ${result.profile.name || "Profile"} uploaded — ${Object.keys(result.skill_confidence).length} skills detected`)
       onProfileUploaded()
     } catch (err: any) {
       toast('error', err.message || "Upload failed. Please try again.")
@@ -152,23 +150,30 @@ function OnboardingScreen({
     }
   }, [onProfileUploaded, toast])
 
+  const handleDemoLoad = async () => {
+    if (!onDemoLoad) return
+    setLoadingDemo(true)
+    try {
+      await (calibrAPI as any).seedDemo()
+      toast("success", "Demo loaded! Exploring CALIBR with Arjun Mehta's profile.")
+      onDemoLoad()
+    } catch (err: any) {
+      toast("error", err.message || "Failed to load demo data")
+    } finally {
+      setLoadingDemo(false)
+    }
+  }
+
   return (
     <div
-      className="flex flex-col items-center justify-center text-center px-6 py-8"
-      style={{ minHeight: "calc(100dvh - 100px)", maxWidth: 620, margin: "0 auto" }}
+      className="flex flex-col items-center justify-center text-center px-4 py-6"
+      style={{ minHeight: "calc(100dvh - 100px)", maxWidth: 680, margin: "0 auto" }}
     >
-      <input
-        ref={fileRef}
-        id="resume-upload-input"
-        type="file"
-        accept=".pdf,.docx,.txt"
-        className="hidden"
-        onChange={handleFile}
-      />
+      <input ref={fileRef} id="resume-upload-input" type="file" accept=".pdf,.docx,.txt" className="hidden" onChange={handleFile} />
 
       {/* Branding */}
-      <div className="mb-5 animate-fade-up">
-        <p style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 36, letterSpacing: "0.2em", color: "var(--accent-mint)", textShadow: "0 0 40px rgba(0,229,160,0.4)", lineHeight: 1 }}>
+      <div className="mb-4 animate-fade-up">
+        <p style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 34, letterSpacing: "0.2em", color: "var(--accent-mint)", textShadow: "0 0 40px rgba(0,229,160,0.4)", lineHeight: 1 }}>
           CALIBR
         </p>
         <p style={{ fontFamily: "DM Sans, sans-serif", fontSize: 10, letterSpacing: "0.3em", color: "var(--text-muted)", textTransform: "uppercase", marginTop: 4 }}>
@@ -176,60 +181,114 @@ function OnboardingScreen({
         </p>
       </div>
 
-      {/* Hero heading */}
-      <div className="mb-7 animate-fade-up">
-        <h1 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 26, color: "var(--text-primary)", lineHeight: 1.25, marginBottom: 8 }}>
-          Start by uploading your resume
+      {/* Heading */}
+      <div className="mb-6 animate-fade-up">
+        <h1 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 22, color: "var(--text-primary)", lineHeight: 1.3, marginBottom: 6 }}>
+          How would you like to get started?
         </h1>
-        <p style={{ color: "var(--text-muted)", fontSize: 14, maxWidth: 380, margin: "0 auto", fontFamily: "DM Sans, sans-serif", lineHeight: 1.7 }}>
-          CALIBR extracts your skills and experience to build a personalized career intelligence dashboard in seconds.
+        <p style={{ color: "var(--text-muted)", fontSize: 13, fontFamily: "DM Sans, sans-serif", lineHeight: 1.6 }}>
+          Upload your resume for a personal experience, or explore instantly with a demo.
         </p>
       </div>
 
-      {/* ── PRIMARY CTA — upload first ── */}
-      <div className="w-full max-w-sm space-y-3 animate-fade-up mb-10">
+      {/* ── Two-path cards ── */}
+      <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 animate-fade-up" style={{ maxWidth: 540 }}>
+
+        {/* Path A — Upload */}
         <button
           onClick={() => fileRef.current?.click()}
-          disabled={uploading}
-          className="w-full flex items-center justify-center gap-2.5 py-4 rounded-xl font-semibold text-base transition-all duration-200"
+          disabled={uploading || loadingDemo}
+          className="flex flex-col items-center text-center p-5 rounded-2xl transition-all duration-200"
           style={{
-            background: uploading ? "var(--bg-elevated)" : "var(--accent-mint)",
-            color: uploading ? "var(--text-muted)" : "var(--text-inverse)",
-            fontFamily: "Syne, sans-serif",
-            boxShadow: uploading ? "none" : "0 0 32px rgba(0,229,160,0.4)",
+            background: "var(--bg-surface)",
+            border: "2px solid var(--accent-mint)",
+            boxShadow: "0 0 24px rgba(0,229,160,0.12)",
             cursor: uploading ? "not-allowed" : "pointer",
-            fontSize: 15,
+            opacity: loadingDemo ? 0.5 : 1,
           }}
+          onMouseEnter={e => { if (!uploading && !loadingDemo) e.currentTarget.style.boxShadow = "0 0 32px rgba(0,229,160,0.28)" }}
+          onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 0 24px rgba(0,229,160,0.12)" }}
         >
-          {uploading ? (
-            <>
-              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-              Parsing your resume…
-            </>
-          ) : (
-            <>
-              <UploadCloud style={{ width: 18, height: 18 }} />
-              Upload Your Resume
-            </>
-          )}
+          <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3"
+            style={{ background: "rgba(0,229,160,0.1)", border: "1.5px solid var(--accent-mint)" }}>
+            {uploading
+              ? <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "var(--accent-mint)", borderTopColor: "transparent" }} />
+              : <UploadCloud style={{ width: 22, height: 22, color: "var(--accent-mint)" }} />
+            }
+          </div>
+          <p className="font-semibold mb-1" style={{ fontFamily: "Syne, sans-serif", fontSize: 15, color: "var(--text-primary)" }}>
+            {uploading ? "Parsing resume…" : "Upload My Resume"}
+          </p>
+          <p style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "DM Sans, sans-serif", lineHeight: 1.5 }}>
+            Get AI analysis from your actual skills and experience
+          </p>
+          <p className="mt-2" style={{ fontSize: 11, color: "var(--accent-mint)", opacity: 0.7, fontFamily: "JetBrains Mono, monospace" }}>
+            PDF · DOCX · TXT
+          </p>
         </button>
 
-        <p className="text-xs" style={{ color: "var(--text-muted)", fontFamily: "DM Sans, sans-serif" }}>
-          PDF, DOCX or TXT · Processed by AI in seconds
-        </p>
-
+        {/* Path B — Demo */}
         {onDemoLoad && (
-          <div className="pt-1">
-            <p className="text-xs mb-2.5" style={{ color: "var(--text-muted)" }}>Or explore with sample data:</p>
-            <LoadDemoButton onLoad={onDemoLoad} />
-          </div>
+          <button
+            onClick={handleDemoLoad}
+            disabled={loadingDemo || uploading}
+            className="flex flex-col items-center text-center p-5 rounded-2xl transition-all duration-200"
+            style={{
+              background: "var(--bg-surface)",
+              border: "2px solid var(--accent-amber)",
+              boxShadow: "0 0 24px rgba(245,158,11,0.1)",
+              cursor: loadingDemo ? "not-allowed" : "pointer",
+              opacity: uploading ? 0.5 : 1,
+            }}
+            onMouseEnter={e => { if (!loadingDemo && !uploading) e.currentTarget.style.boxShadow = "0 0 32px rgba(245,158,11,0.25)" }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 0 24px rgba(245,158,11,0.1)" }}
+          >
+            <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3"
+              style={{ background: "rgba(245,158,11,0.1)", border: "1.5px solid var(--accent-amber)" }}>
+              {loadingDemo
+                ? <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "var(--accent-amber)", borderTopColor: "transparent" }} />
+                : <Zap style={{ width: 22, height: 22, color: "var(--accent-amber)" }} />
+              }
+            </div>
+            <p className="font-semibold mb-1" style={{ fontFamily: "Syne, sans-serif", fontSize: 15, color: "var(--text-primary)" }}>
+              {loadingDemo ? "Loading demo…" : "Explore with Demo"}
+            </p>
+            <p style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "DM Sans, sans-serif", lineHeight: 1.5 }}>
+              Try Arjun Mehta's profile instantly — perfect for presentations
+            </p>
+            <p className="mt-2" style={{ fontSize: 11, color: "var(--accent-amber)", opacity: 0.7, fontFamily: "JetBrains Mono, monospace" }}>
+              No upload needed
+            </p>
+          </button>
         )}
       </div>
 
-      <div className="mt-10 flex flex-wrap items-center justify-center gap-5 animate-fade-up">
+      {/* What you get */}
+      <p className="mb-4 animate-fade-up" style={{ color: "var(--text-muted)", fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: "JetBrains Mono, monospace" }}>WHAT YOU GET</p>
+      <div className="w-full flex flex-col sm:flex-row items-center sm:items-start justify-center animate-fade-up gap-3 sm:gap-0 mb-6">
+        {ONBOARDING_STEPS.map((step, i) => (
+          <div key={step.n} className="flex sm:items-start items-center">
+            <div className="flex flex-col items-center text-center" style={{ width: 140 }}>
+              <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold mb-2"
+                style={{ background: `${step.color}12`, border: `2px solid ${step.color}`, color: step.color, fontFamily: "Syne, sans-serif", fontSize: 13 }}>
+                {step.n}
+              </div>
+              <p className="font-semibold mb-0.5" style={{ color: "var(--text-primary)", fontFamily: "Syne, sans-serif", fontSize: 12 }}>{step.title}</p>
+              <p className="leading-relaxed px-2" style={{ color: "var(--text-muted)", fontFamily: "DM Sans, sans-serif", fontSize: 11 }}>{step.desc}</p>
+            </div>
+            {i < ONBOARDING_STEPS.length - 1 && (
+              <div className="hidden sm:block mt-3 shrink-0" style={{ color: "var(--text-muted)", opacity: 0.3 }}>
+                <ArrowRight style={{ width: 16, height: 16 }} />
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap items-center justify-center gap-4 animate-fade-up">
         {["Private by design", "AI-powered extraction", "No cloud storage"].map((item) => (
           <div key={item} className="flex items-center gap-1.5 text-xs" style={{ color: "var(--text-muted)" }}>
-            <CheckCircle2 style={{ width: 12, height: 12, color: "var(--accent-mint)", opacity: 0.7, flexShrink: 0 }} />
+            <CheckCircle2 style={{ width: 11, height: 11, color: "var(--accent-mint)", opacity: 0.7, flexShrink: 0 }} />
             {item}
           </div>
         ))}
